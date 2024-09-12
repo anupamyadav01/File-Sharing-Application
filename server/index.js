@@ -3,7 +3,7 @@ import router from "./router/fileRouter.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 dotenv.config();
 const app = express();
 
