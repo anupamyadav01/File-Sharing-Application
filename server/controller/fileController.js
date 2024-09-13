@@ -1,10 +1,11 @@
-import multer from "multer";
-import { v4 as randomString } from "uuid";
+// import multer from "multer";
+// import { v4 as randomString } from "uuid";
 import path from "path";
-import { fileModel } from "../model/fileModel.js";
+import { userModel } from "../model/fileModel.js";
 // dotenv.config();
 import nodemailer from "nodemailer";
-import dotenv from "dotenv";
+import mongoose from "mongoose";
+// import dotenv from "dotenv";
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -14,57 +15,70 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-console.log(process.env.MY_PASSWORD);
-const uploadFolderPath = "uploads";
+// const uploadFolderPath = "uploads";
+// const storage = multer.diskStorage({
+//   destination: (req, file, callback) => {
+//     callback(null, uploadFolderPath);
+//   },
+//   filename: (req, file, callback) => {
+//     const fileName = randomString() + path.extname(file.originalname);
+//     // console.log(fileName);
 
-const storage = multer.diskStorage({
-  destination: (req, file, callback) => {
-    callback(null, uploadFolderPath);
-  },
-  filename: (req, file, callback) => {
-    const fileName = randomString() + path.extname(file.originalname);
-    // console.log(fileName);
+//     callback(null, fileName);
+//   },
+// });
 
-    callback(null, fileName);
-  },
-});
+// const upload = multer({
+//   storage: storage,
+//   limits: {
+//     fileSize: 1024 * 1024 * 4,
+//   },
+// }).single("attachment");
 
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 1024 * 1024 * 4,
-  },
-}).single("attachment");
+export const uploadFile = async (req, res) => {
+  const { name, email } = req.body;
+  const photo = req.file.path;
+  // console.log(name, email, photoURL);
+  const dataToSave = new userModel({ name, email, photo });
+  const isDataSaved = await dataToSave.save();
 
-export const uploadFile = (req, res) => {
-  upload(req, res, async (error) => {
-    if (error) {
-      console.log(error.message);
-      return res.status(400).json({
-        status: false,
-        message: error.message,
-      });
-    }
-    // console.log(req.file);
-
-    const { originalname, filename, size } = req.file;
-    console.log(originalname, filename, size);
-
-    const dataToUpload = {
-      originalName: originalname,
-      newName: filename,
-      fileSize: size,
-    };
-
-    const uploadedData = await fileModel.create(dataToUpload);
-    // console.log(uploadedData);
-
-    res.send({
+  if (isDataSaved) {
+    res.status(200).json({
       status: true,
-      message: "File Upload API",
-      fileID: uploadedData._id,
+      message: "File saved successfully",
     });
-  });
+  } else {
+    res.status(400).json({
+      status: false,
+      message: "Unable to save data",
+    });
+  }
+  // const file = req.file.path;
+  // console.log(file);
+  // upload(req, res, async (error) => {
+  //   if (error) {
+  //     console.log(error.message);
+  //     return res.status(400).json({
+  //       status: false,
+  //       message: error.message,
+  //     });
+  //   }
+  //   // console.log(req.file);
+  //   const { originalname, filename, size } = req.file;
+  //   console.log(originalname, filename, size);
+  //   const dataToUpload = {
+  //     originalName: originalname,
+  //     newName: filename,
+  //     fileSize: size,
+  //   };
+  //   const uploadedData = await fileModel.create(dataToUpload);
+  //   // console.log(uploadedData);
+  //   res.send({
+  //     status: true,
+  //     message: "File Upload API",
+  //     fileID: uploadedData._id,
+  //   });
+  // });
 };
 
 export const generateShareableLink = async (req, res) => {

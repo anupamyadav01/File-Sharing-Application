@@ -2,10 +2,17 @@ import express from "express";
 import router from "./router/fileRouter.js";
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import cors from "cors";
 
 const PORT = process.env.PORT || 8080;
 dotenv.config();
 const app = express();
+app.use(express.urlencoded({ extended: true }));
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 app.use(express.json());
 
